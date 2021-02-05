@@ -3,6 +3,7 @@ package dasniko.quarkus.funqy;
 import io.quarkus.funqy.Funq;
 
 import javax.inject.Inject;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -10,33 +11,25 @@ import java.util.Map;
  */
 public class GreetingFunction {
 
+    @Funq
+    public Map<String, String> hello(Map<String, String> params) {
+        return Collections.singletonMap("hello", params.get("name"));
+    }
+
     @Inject
     GreetingService service;
 
-    @Funq
-    public Greeting hello(Map<String, String> params) {
-        return service.greet(params.get("name"));
+    @Funq("greet")
+    public Greeting greetingAPerson(Person person) {
+        return service.greet(person.getFirst() + " " + person.getLast());
     }
 
     @Funq
-    public String greeting(Person person) {
-        return String.format("Hello %s %s!", person.getFirst(), person.getLast());
-    }
-
-    @Funq("family")
-    public String greetFamily(Family family) {
-        return String.format("Hello Mom, %s %s and Dad, %s %s!",
+    public String family(Family family) {
+        return String.format("Hello Mom, %s %s and Dad, %s %s, with the kids %s!",
                 family.getMom().getFirst(), family.getMom().getLast(),
-                family.getDad().getFirst(), family.getDad().getLast());
+                family.getDad().getFirst(), family.getDad().getLast(),
+                String.join(", ", family.getKids()));
     }
 
-    @Funq("kids")
-    public String greedKids(Family family) {
-        return String.format("Hello %s!", String.join(", ", family.getKids()));
-    }
-
-    @Funq
-    public Family jsonFamily(Family family) {
-        return family;
-    }
 }
