@@ -7,6 +7,7 @@
     <artifactId>funqy-demo</artifactId>
     <version>1.0-SNAPSHOT</version>
     <properties>
+        <azure.functions.maven.plugin.version>1.9.1</azure.functions.maven.plugin.version>
         <compiler-plugin.version>3.8.1</compiler-plugin.version>
         <maven.compiler.parameters>true</maven.compiler.parameters>
         <maven.compiler.source>11</maven.compiler.source>
@@ -15,9 +16,16 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <quarkus.platform.artifact-id>quarkus-universe-bom</quarkus.platform.artifact-id>
         <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
-        <quarkus.platform.version>1.13.3.Final</quarkus.platform.version>
-        <quarkus-plugin.version>1.13.3.Final</quarkus-plugin.version>
+        <quarkus.platform.version>1.12.0.Final</quarkus.platform.version>
+        <quarkus-plugin.version>1.12.0.Final</quarkus-plugin.version>
+        <resources-plugin.version>3.1.0</resources-plugin.version>
         <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
+
+        <function>funqy</function>
+        <functionAppName>dasnikoFunqyDemo</functionAppName>
+        <functionAppRegion>germanywestcentral</functionAppRegion>
+        <functionResourceGroup>java-functions-group</functionResourceGroup>
+        <stagingDirectory>${project.build.directory}/azure-functions/${functionAppName}</stagingDirectory>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -38,6 +46,10 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-arc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-azure-functions-http</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -80,6 +92,114 @@
                         <maven.home>${maven.home}</maven.home>
                     </systemPropertyVariables>
                 </configuration>
+            </plugin>
+            <!-- we only use azure plugin to deploy to Azure.
+                 The directory structure is set up through various plugins in this pom -->
+            <plugin>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-functions-maven-plugin</artifactId>
+                <version>${azure.functions.maven.plugin.version}</version>
+                <configuration>
+                    <resourceGroup>${functionResourceGroup}</resourceGroup>
+                    <appName>${functionAppName}</appName>
+                    <region>${functionAppRegion}</region>
+                    <runtime>
+                        <javaVersion>11</javaVersion>
+                    </runtime>
+                    <appSettings>
+                        <property>
+                            <name>FUNCTIONS_EXTENSION_VERSION</name>
+                            <value>~3</value>
+                        </property>
+                    </appSettings>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>${resources-plugin.version}</version>
+                <executions>
+                    <!-- add azure required json files to Azure staging directory -->
+                    <execution>
+                        <id>copy-base-azure-config</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <overwrite>true</overwrite>
+                            <outputDirectory>${stagingDirectory}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/azure-config</directory>
+                                    <includes>
+                                        <include>host.json</include>
+                                        <include>local.settings.json</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <!-- copy unpacked function.json into Azure staging directory -->
+                    <execution>
+                        <id>copy-function-json</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <overwrite>true</overwrite>
+                            <outputDirectory>${stagingDirectory}/${function}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/azure-config</directory>
+                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>function.json</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <!-- copy the uber-jar into Azure staging directory -->
+                    <execution>
+                        <id>copy-uberjar</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <overwrite>true</overwrite>
+                            <outputDirectory>${stagingDirectory}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}</directory>
+                                    <includes>
+                                        <include>${project.artifactId}-${project.version}-runner.jar</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.coderplus.maven.plugins</groupId>
+                <artifactId>copy-rename-maven-plugin</artifactId>
+                <version>1.0.1</version>
+                <executions>
+                    <execution>
+                        <id>rename-file</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <sourceFile>${project.build.directory}/${project.artifactId}-${project.version}-runner.jar</sourceFile>
+                            <destinationFile>${stagingDirectory}/${project.artifactId}-${project.version}.jar</destinationFile>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
