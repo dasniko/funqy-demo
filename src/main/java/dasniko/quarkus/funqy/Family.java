@@ -10,6 +10,14 @@ public class Family {
     private Person dad;
     private List<String> kids;
 
+    public Family() {}
+
+    public Family(Person mom, Person dad, List<String> kids) {
+        this.mom = mom;
+        this.dad = dad;
+        this.kids = kids;
+    }
+
     public Person getMom() {
         return mom;
     }
