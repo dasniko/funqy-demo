@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.containsString;
  * @author Niko Köbler, https://www.n-k.de, @dasniko
  */
 @QuarkusTest
+@SuppressWarnings("ResultOfMethodCallIgnored")
 public class GreetingFunctionTest {
 
     @Test
