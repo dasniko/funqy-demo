@@ -1,32 +1,16 @@
 package dasniko.quarkus.funqy;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 /**
  * @author Niko Köbler, https://www.n-k.de, @dasniko
  */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Person {
     private String first;
     private String last;
-
-    public Person() {}
-
-    public Person(String first, String last) {
-        this.first = first;
-        this.last = last;
-    }
-
-    public String getFirst() {
-        return first;
-    }
-
-    public void setFirst(String first) {
-        this.first = first;
-    }
-
-    public String getLast() {
-        return last;
-    }
-
-    public void setLast(String last) {
-        this.last = last;
-    }
 }

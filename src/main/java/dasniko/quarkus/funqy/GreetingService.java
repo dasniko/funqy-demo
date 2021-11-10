@@ -9,8 +9,6 @@ import javax.enterprise.context.ApplicationScoped;
 public class GreetingService {
 
     public Greeting greet(String value) {
-        Greeting greeting = new Greeting();
-        greeting.setMessage("Hello, " + value);
-        return greeting;
+        return new Greeting("Hello, " + value);
     }
 }

@@ -7,13 +7,23 @@ import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 
 /**
  * @author Niko Köbler, https://www.n-k.de, @dasniko
  */
 @QuarkusTest
-@SuppressWarnings("ResultOfMethodCallIgnored")
 public class GreetingFunctionTest {
+
+    @Test
+    public void testPlain() {
+        given().contentType("application/json")
+                .body("\"John\"")
+                .post("/plain")
+                .then()
+                .statusCode(200)
+                .body(containsString("Hello John"));
+    }
 
     @Test
     public void testHello() {
@@ -22,9 +32,7 @@ public class GreetingFunctionTest {
                 .get("/hello")
                 .then()
                 .statusCode(200)
-                .extract()
-                .path("hello")
-                .equals("john");
+                .body("hello", is("john"));
     }
 
     @Test
@@ -35,9 +43,7 @@ public class GreetingFunctionTest {
                 .get("/greet")
                 .then()
                 .statusCode(200)
-                .extract()
-                .path("message")
-                .equals("Hello, John Doe");
+                .body("message", is("Hello, John Doe"));
     }
 
     @Test

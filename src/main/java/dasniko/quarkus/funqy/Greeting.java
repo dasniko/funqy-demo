@@ -1,16 +1,11 @@
 package dasniko.quarkus.funqy;
 
+import lombok.Data;
+
 /**
  * @author Niko Köbler, https://www.n-k.de, @dasniko
  */
+@Data
 public class Greeting {
-    String message;
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
+    private final String message;
 }
